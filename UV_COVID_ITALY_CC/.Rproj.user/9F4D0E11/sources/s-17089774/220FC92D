@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1592923958978.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "220FC92D",
+    "lastKnownWriteTime" : 1592925498,
+    "last_content_update" : 1592925498471,
+    "path" : "~/GitHub/COVID_UVA/UV_COVID_ITALY_CC/Analyses.R",
+    "project_path" : "Analyses.R",
+    "properties" : {
+        "cursorPosition" : "9,2",
+        "scrollLine" : "3",
+        "tempName" : "Untitled2"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,182 @@
+"0","```r
+library(sf)
+# Here's some data I made earlier
+covid19sample<-read.csv(\"Data/FinalSample/sampleforglmmTMB.csv\")
+
+# add in political data
+political<-read.csv(\"Data/HealthPop/countypres_2000-2016.csv\")
+political<-political[political$year==2016,]
+result <- political %>% 
+             group_by(FIPS) %>%
+             slice(which.max(candidatevotes))
+
+# If you've run the preprocessing code then 
+#covid19sample<-aggregate_pm_census_cdc_test2
+
+################################ MAPS ####################################################
+
+counties<-read_sf(\"Data/UScounties/UScounties.shp\")
+covid19sample$fips<-ifelse(nchar(covid19sample$fips)==4, paste0(\"0\", covid19sample$fips), covid19sample$fips)
+covid19sample$FIPS<-as.character(covid19sample$fips)
+counties<-merge(counties, covid19sample, by=\"FIPS\")
+
+counties$meanUVAKJ100<-counties$meanUVAKJ100*100
+counties$UVAyearmean<-counties$UVAyearmean*10000
+
+
+png(\"Data/Figures/Figure1A.png\")
+plot(counties[\"UVAyearmean\"], border=NA, main=\"Mean Monthly UVA from 1979-2000 (KJ/m2)\")
+dev.off()
+
+
+png(\"Data/Figures/Figure1B.png\")
+plot(counties[\"meanUVAKJ100\"], border=NA, main=\"Mean Daily UVA from Jan-Apr 2020 (KJ/m2)\")
+dev.off()
+
+
+################################ SHORT TERM ##############################################
+library(glmmTMB)
+library(emmeans)
+
+m <- glmmTMB(
+  Deaths ~  meanUVAKJ100
+  # air pollution
+  + scale(mean_pm25) 
+  # other weather
+  + scale(mean_winter_temp)
+  # + scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) + (1 | state), 
+  
+  ziformula = ~ meanUVAKJ100 
+  + offset(log(population)), 
+  family = nbinom2, 
+  data = covid19sample
+)
+
+## show estimates
+m
+
+# create marginal effects
+t<-emmeans(m, c(\"meanUVAKJ100\"), at = list(meanUVAKJ100 = c(4,5,6,7,8,9)), type = \"re\", offset=c(log(1000000)))
+t
+#plot(t, by = NULL, horizontal = FALSE, colors = \"darkgreen\")
+
+
+######################################## LONG TERM ##############################################
+
+m <- glmmTMB(
+  Deaths ~  UVAyearmean
+  # air pollution
+  + scale(mean_pm25) 
+  # other weather
+  + scale(mean_winter_temp)
+  + scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity)+ scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) + (1 | state), 
+  
+  ziformula = ~ UVAyearmean
+  + offset(log(population)), 
+  family = nbinom2, 
+  data = covid19sample
+)
+
+## show estimates
+m
+
+
+#####################
+#### eemeans
+t<-emmeans(m, c(\"UVAyearmean\"),at = list(UVAyearmean = c(2.3,2.6,2.9, 3.2)), type = \"re\", offset=c(log(1000000)))
+t
+
+
+
+############################################# interaction
+
+# 1. . Include a product (interaction) term in the model if you want to investigate whether the effect of one independent variable is contingent on the level of a second independent variable
+
+m <- glmmTMB(
+  Deaths ~  meanUVAKJ100*UVAyearmean
+  # air pollution
+  + scale(mean_pm25) 
+  # other weather
+  + scale(mean_winter_temp)
+  #+ scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)  
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) + (1 | state), 
+  
+  ziformula = ~ meanUVAKJ100*UVAyearmean
+  + offset(log(population)), 
+  family = nbinom2, 
+  data = covid19sample
+)
+
+## show estimates
+m
+
+# 2. Ignore the coefficient of the product term: It does not necessarily provide accurate information about the significance, magnitude, or even the direction of the underlying interaction effect on the predictions.
+
+#####################################
+
+# 3. Plot the predictions to determine the nature of the underlying interaction effect on the metric of interest.
+
+library(ggplot2)
+p<-emmip(m,UVAyearmean~meanUVAKJ100, at = list(meanUVAKJ100 =c(5,6,7,8), UVAyearmean = c(2.3,2.6,2.9, 3.2)), type=\"re\", CIs=T, offset=c(log(1000000))) + theme_classic(base_size = 18) 
+
+pdf(\"Data/Figures/Figure2_600dpi.pdf\", width=8, height=5)
+p
+dev.off()
+
+#p + facet_grid(rows = vars(UVAyearmean)) 
+
+#####################################
+
+# 4.Determine the size and significance of the effects of interest using marginal effects, not regression coefficients.
+
+df<-emmip(m,UVAyearmean~meanUVAKJ100, at = list(meanUVAKJ100 =c(5,6,7,8), UVAyearmean = c(2.3,2.6,2.9, 3.2)), type=\"re\", plotit=F, CIs=T, offset=c(log(1000000)))
+
+df
+
+### There is a difference, almost treble the predicted deaths, the confidence intervals lap, so not a strong difference.
+
+
+# 5. Use tests of second differences (whether two marginal effects are equal) to determine whether an interaction effect is significant for specific values of interest of your independent variables.
+
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(2.3)), var=\"meanUVAKJ100\"))
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(2.6)), var=\"meanUVAKJ100\"))
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(2.9)), var=\"meanUVAKJ100\"))
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(3.2)), var=\"meanUVAKJ100\"))
+
+
+# 6. Absent substantive or theoretically interesting values of the focal independent or control variables to test the interaction effect, use average marginal effects to summarize whether there is an interaction effect present on average in the data.
+
+# trend p-value
+test(emtrends(m,  ~ UVAyearmean,  var=\"meanUVAKJ100\"))
+
+
+```"

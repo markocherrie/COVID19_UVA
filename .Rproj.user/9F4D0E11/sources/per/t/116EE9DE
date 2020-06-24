@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1591194533894.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3926231387",
+    "id" : "116EE9DE",
+    "lastKnownWriteTime" : 1591369043,
+    "last_content_update" : 1591369044025,
+    "path" : "~/GitHub/COVID_UV/non-linear.Rmd",
+    "project_path" : "non-linear.Rmd",
+    "properties" : {
+        "cursorPosition" : "229,116",
+        "scrollLine" : "220"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1590407045382.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "692462390",
+    "id" : "52199E28",
+    "lastKnownWriteTime" : 1590407059,
+    "last_content_update" : 1590407059,
+    "path" : "~/GitHub/COVID_UV/PreprocessingShortUV.R",
+    "project_path" : "PreprocessingShortUV.R",
+    "properties" : {
+        "cursorPosition" : "12,0",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

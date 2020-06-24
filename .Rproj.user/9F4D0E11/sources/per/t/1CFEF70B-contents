@@ -1,0 +1,195 @@
+
+# If you've run the preprocessing code then 
+#covid19sample<-aggregate_pm_census_cdc_test2
+
+covid19sample<-read.csv("Data/FinalSample/sampleforglmmTMB2.csv")
+covid19sample$fips<-ifelse(nchar(covid19sample$fips)==4, paste0("0", covid19sample$fips), covid19sample$fips)
+
+######################
+
+newuv<-read.csv("Data/UVJAXA/meanUVAJAN01APR14_US.csv")
+newuv$fips<-ifelse(nchar(newuv$county)==4, paste0("0", newuv$county), newuv$county)
+newuv$county<-NULL
+covid19sample<-merge(covid19sample, newuv, by="fips")
+
+
+########################
+
+
+
+#covid19sample$meanUVAKJ100powminuus2<-1/covid19sample$meanUVAKJ100^2
+
+
+
+# showing the curves
+eq = function(x){x^-2}
+plot(eq(4:10), type='l')
+
+# back transformation
+x=7^-2
+sqrt(1/x)
+
+covid19sample$meanUVAKJ100log<-covid19sample$meanUVAKJ100*log(covid19sample$meanUVAKJ100)
+
+library(glmmTMB)
+library(emmeans)
+
+m <- glmmTMB(
+  Deaths ~  scale(meanUVAKJ100powminuus2) 
+  # + scale(meanUVAKJ100log)
+  # undocumented
+  # + scale(Unauthorized.immigrant...of.population)
+  # air pollution
+  + scale(mean_pm25) 
+  # other climate
+  + scale(mean_winter_temp)
+  + scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) 
+  # multilevel
+  + (1 | state), 
+  
+  ziformula = ~  
+  # demographics
+  + scale(pct_blk) + scale(older_pecent)  + scale(hispanic) + scale(popdensity)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT),
+  # family
+  family = nbinom2, 
+  data = covid19sample
+)
+
+## show estimates
+m
+summary(m)
+t<-emmeans(m, c("meanUVAKJ100"), at = list(meanUVAKJ100 = c(4, 4.5,5,5.5,6,6.5, 7, 7.5,8, 8.5, 9)), type = "re", offset=c(log(1000000)))
+
+t2<-emmeans(m, c("meanUVAKJ100log"), at = list(meanUVAKJ100log = c(8.04719,9.376115,10.75056,12.16671,13.62137, 15.11177, 16.63553,18.19056, 19.77502)), type = "re", offset=c(log(1000000)))
+
+par(mfrow=c(2,1))
+
+
+#####
+plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen") +
+  scale_y_continuous(trans = 'log10')  + theme(text = element_text(size=20))
+
+plot(t2, by = NULL, horizontal = FALSE, colors = "darkgreen")+
+  scale_y_continuous(trans = 'log10') +
+  theme(text = element_text(size=20))
+
+
+
+
+
+
+t<-emmeans(m, c("meanUVAKJ100"), at = list(meanUVAKJ100 = c(6, 6.5, 7)), type = "re", offset=c(log(1000000)))
+plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen")
+
+
+########################################################################################
+library(gamm4)
+
+covid19sample<-covid19sample[!is.na(covid19sample$meanUVAKJ),]
+gamm.model = gamm4V(Deaths ~  s(meanUVAKJ100, k=100) 
+                       + scale(mean_pm25) 
+                       # other climate
+                       + scale(mean_winter_temp)
+                       + scale(UVvitdyearmean) 
+                       # demographics
+                       + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+                       # Deprivation
+                       + scale(PCA1)
+                       # health care factors
+                       + scale(statepositivetestsperpop) 
+                       # urban rural
+                       + factor(RUCC_2013_CAT)
+                     # population
+                      + offset(log(population)), data = new, 
+                      family=negbin(1), random = ~(1|state))
+plot(gamm.model$residuals)
+plot(gamm.model)
+
+ggpredict(gamm.model, terms = "s(meanUVAKJ100,5.26)")
+
+
+t<-emmeans(gamm.model, c("meanUVAKJ100"), at = list(meanUVAKJ100 = c(6, 6.5,7,7.5,8, 9, 10, 11)), type = "re", offset=c(log(1000000)))
+t<-as.data.frame(t)
+
+########################################################################################
+
+
+# Use geom_line()+geom_pointrange()
+ggplot(t, aes(x=meanUVAKJ100powminuus2, y=response)) + 
+  geom_line()+
+  geom_pointrange(aes(ymin=lower.CL, ymax=upper.CL))
+
+sqrt(1/18.35694)
+
+###################################################################################
+
+newuv<-read.csv("Data/UVJAXA/meanuvajanmayUSAcounty.csv")
+newuv$V1<-ifelse(nchar(newuv$V1)==4, paste0("0",newuv$V1), newuv$V1)
+newuv$V2<-newuv$V2/100
+colnames(newuv)<-c("fips", "newuv100KJ")
+
+covid19sample <-merge(covid19sample, newuv, by="fips")
+
+#######################################
+library(RCurl)
+library(stringr)
+
+date_of_study = "05-05-2020"
+# Historical data
+covid_hist = read.csv(text=getURL("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-30-2020.csv"))
+covid_us_hist = subset(covid_hist, Country_Region == "US" & is.na(FIPS)==F)
+
+# Import outcome data from JHU CSSE
+covid = read.csv(text=getURL(paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/",date_of_study,".csv")))
+covid_us = subset(covid,Country_Region == "US")[,1:12]
+covid_us = rbind(covid_us,subset(covid_us_hist, (!(FIPS %in% covid_us$FIPS))  & Confirmed == 0 & Deaths == 0 & is.na(FIPS)==F))
+covid_us$FIPS = str_pad(covid_us$FIPS, 5, pad = "0")
+
+covid_us<-subset(covid_us, select=c("FIPS", "Deaths"))
+colnames(covid_us)<-c("FIPS", "NewDeaths")
+
+covid19sample<-merge(covid19sample, covid_us, by.x="fips", by.y="FIPS")
+
+######################### MAPS
+
+counties<-sf::st_read("data/UScounties/UScounties.shp")
+
+countiesuv<-merge(counties, covid19sample, by.x="FIPS", by.y="fips")
+
+plot(countiesuv["newuv100KJ"], border=NA, main="")
+
+plot(countiesuv["meanUVAKJ100"], border=NA, main="")
+
+countiesuv$diff<-scale(countiesuv$newuv100KJ)-scale(countiesuv$meanUVAKJ100)
+plot(countiesuv["diff"], border=NA, main="")
+
+
+############################### undocumented
+
+undocumented<-read.csv("Data/HealthPop/Undocumented_state.csv")
+covid19sample<-merge(covid19sample, undocumented, by="state")
+
+##########################
+
+newdata<-read.csv("Data/newmeasures.csv")
+covid19sample<-merge(covid19sample, newdata, by="fips")
+
+###############################
+
+covid19sample$newuv100KJpowminuus2<-covid19sample$newuv100KJ^-2

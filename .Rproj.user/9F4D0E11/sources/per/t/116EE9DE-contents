@@ -1,0 +1,268 @@
+---
+title: "UVA and Covid-19 Deaths"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+```{r echo=TRUE}
+library(sf)
+# Here's some data I made earlier
+#covid19sample<-read.csv("Data/FinalSample/sampleforglmmTMB2.csv")
+
+# If you've run the preprocessing code then 
+covid19sample<-aggregate_pm_census_cdc_test2
+
+################################ MAPS ####################################################
+
+counties<-read_sf("Data/UScounties/UScounties.shp")
+covid19sample$fips<-ifelse(nchar(covid19sample$fips)==4, paste0("0", covid19sample$fips), covid19sample$fips)
+covid19sample$FIPS<-as.character(covid19sample$fips)
+counties<-merge(counties, covid19sample, by="FIPS")
+
+counties$meanUVAKJ100<-counties$meanUVAKJ100*100
+counties$UVAyearmean<-counties$UVAyearmean*10000
+
+
+png("Data/Figures/Figure1A.png")
+plot(counties["UVAyearmean"], border=NA, main="Mean Monthly UVA from 1979-2000 (KJ/m2)")
+dev.off()
+
+
+png("Data/Figures/Figure1B.png")
+plot(counties["meanUVAKJ100"], border=NA, main="Mean Daily UVA from Jan-Apr 2020 (KJ/m2)")
+dev.off()
+
+
+################################ SHORT TERM ##############################################
+library(glmmTMB)
+library(emmeans)
+
+m <- glmmTMB(
+  NewDeaths ~  meanUVAKJ1002
+  # air pollution
+  + scale(mean_pm25) 
+  # other weather
+  + scale(mean_winter_temp)
+  #+ scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) 
+  # multilevel
+  + (1 | state), 
+  
+  ziformula = ~  
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT),
+  # family
+  family = nbinom2, 
+  data = covid19sample
+)
+
+## show estimates
+m
+
+# create marginal effects
+t<-emmeans(m, c("meanUVAKJ1002"), at = list(meanUVAKJ1002 = c(0.01,0.02,0.03,0.04)), type = "re", offset=c(log(1000000)))
+t
+plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen")
+
+
+################### sub-sample
+
+#covid19sampleSUB <- covid19sample[covid19sample$UVAyearmean<2.7,]
+covid19sampleSUB <- covid19sample[covid19sample$meanUVAKJ100>=5.5 & covid19sample$meanUVAKJ100<=7.2,]
+
+covid19sampleSUB <- covid19sample[covid19sample$meanUVAKJ100>=4.5 & covid19sample$meanUVAKJ100<=7.2,]
+
+
+m <- glmmTMB(
+  Deaths ~  meanUVAKJ100 
+  # air pollution
+  + scale(mean_pm25) 
+  # other weather
+  + scale(mean_winter_temp)
+  + scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) 
+  # multilevel
+  + (1 | state), 
+  
+  ziformula = ~  
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT),
+  # family
+  family = nbinom2, 
+  data = covid19sampleSUB
+)
+
+## show estimates
+m
+summary(m)
+
+#####################
+t<-emmeans(m, c("meanUVAKJ100"),at = list(meanUVAKJ100 = c(5.5, 6.0, 6.5, 7)), type = "re", offset=c(log(1000000)))
+t
+
+plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen")
+
+
+############################################# power of minus 2
+
+covid19sample$meanUVAKJ1002 <- (1/covid19sample$meanUVAKJ100^2)
+
+m <- glmmTMB(
+  Deaths ~ meanUVAKJ1002
+  # uva long term
+  #+scale(n)
+  # air pollution
+  + scale(mean_pm25) 
+  # other weather
+  + scale(mean_winter_temp)
+  + scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)  
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) + (1 | state), 
+  
+  ziformula = ~   
+  # demographics
+  scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)  
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT),
+  family = nbinom2, 
+  data = covid19sample
+)
+
+## show estimates
+m
+
+
+t<-emmeans(m, c("meanUVAKJ1002"),at = list(meanUVAKJ1002 = c(0.020, 0.025, 0.030, 0.035)), type = "re", offset=c(log(1000000)))
+t
+
+plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen")
+
+
+##########################################################
+
+covid19sample$UVAthreshold <- ifelse(covid19sample$meanUVAKJ100>6.2,1,0)
+covid19sample$UVAthreshold <- as.factor(covid19sample$UVAthreshold)
+
+#covid19sample<-merge(covid19sample, newdeaths, by.x="fips",by.y="FIPS")
+
+
+m <- glmmTMB(
+  NewDeaths ~ meanUVAKJ1002
+  # air pollution
+  + scale(mean_pm25) 
+  # other weather
+  + scale(mean_winter_temp)
+  + scale(UVvitdyearmean) 
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)  
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) + (1 | state), 
+  
+  ziformula = ~   
+  # demographics
+  scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)  
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT),
+  family = nbinom2, 
+  data = covid19sample
+)
+
+## show estimates
+m
+summary(m)
+
+library(ggplot2)
+p<-emmip(m,UVAthreshold~meanUVAKJ100, at = list(meanUVAKJ100 =c(5,6,7,8)), type="re", CIs=T, offset=c(log(1000000))) + theme_classic(base_size = 18) 
+p
+
+####################################################################
+
+
+
+pdf("Data/Figures/Figure2_600dpi.pdf", width=8, height=5)
+p
+dev.off()
+
+#p + facet_grid(rows = vars(UVAyearmean)) 
+
+#####################################
+
+# 4.Determine the size and significance of the effects of interest using marginal effects, not regression coefficients.
+
+df<-emmip(m,UVAyearmean~meanUVAKJ100, at = list(meanUVAKJ100 =c(5,6,7,8), UVAyearmean = c(2.3,2.6,2.9, 3.2)), type="re", plotit=F, CIs=T, offset=c(log(1000000)))
+
+df
+
+### There is a difference, almost treble the predicted deaths, the confidence intervals lap, so not a strong difference.
+
+
+# 5. Use tests of second differences (whether two marginal effects are equal) to determine whether an interaction effect is significant for specific values of interest of your independent variables.
+
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(2.3)), var="meanUVAKJ100"))
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(2.6)), var="meanUVAKJ100"))
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(2.9)), var="meanUVAKJ100"))
+test(emtrends(m,  ~ UVAyearmean, at=list(UVAyearmean = c(3.2)), var="meanUVAKJ100"))
+
+
+# 6. Absent substantive or theoretically interesting values of the focal independent or control variables to test the interaction effect, use average marginal effects to summarize whether there is an interaction effect present on average in the data.
+
+# trend p-value
+test(emtrends(m,  ~ UVAyearmean,  var="meanUVAKJ100"))
+
+
+```

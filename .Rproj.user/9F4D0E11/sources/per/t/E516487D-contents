@@ -1,0 +1,152 @@
+# If you've run the preprocessing code then 
+#covid19sample<-aggregate_pm_census_cdc_test2
+
+covid19sample<-read.csv("Data/FinalSample/sampleforglmmTMB2.csv")
+covid19sample$fips<-ifelse(nchar(covid19sample$fips)==4, paste0("0", covid19sample$fips), covid19sample$fips)
+
+######################
+
+newuv<-read.csv("Data/UVJAXA/meanUVAJAN01APR30.csv")
+newuv$fips<-ifelse(nchar(newuv$county)==4, paste0("0", newuv$county), newuv$county)
+newuv$county<-NULL
+covid19sample<-merge(covid19sample, newuv, by="fips")
+
+covid19sample$meanUVAJAN01APR30<-covid19sample$meanUVAJAN01APR30/100
+
+covid19sample$UVvitdyearmeanQ2<-as.numeric(gtools::quantcut(covid19sample$UVvitdyearmean, 5))
+
+
+######################################## maps
+
+
+counties<-read_sf("Data/UScounties/UScounties.shp")
+
+newuv$fips<-ifelse(nchar(newuv$fips)==4, paste0("0", newuv$fips), newuv$fips)
+newuv$FIPS<-as.character(newuv$fips)
+counties<-merge(counties, newuv, by="FIPS")
+
+counties<-counties[counties$STATE_NAME!="Hawaii",]
+counties<-counties[counties$STATE_NAME!="Alaska",]
+
+plot(counties["meanUVAJAN01APR30"], border=NA, main="")
+
+
+
+covid19sample$fips<-ifelse(nchar(covid19sample$fips)==4, paste0("0", covid19sample$fips), covid19sample$fips)
+covid19sample$FIPS<-as.character(covid19sample$fips)
+counties<-merge(counties, covid19sample, by="FIPS")
+
+counties$meanUVAJAN01APR30<-counties$meanUVAJAN01APR30*100
+
+plot(counties["meanUVAJAN01APR30"], border=NA, main="")
+plot(counties["UVvitdyearmeanQ2"], border=NA, main="")
+
+counties$north37<-ifelse(counties$Lat<37,"1","0")
+
+plot(counties["north37"], border=NA, main="")
+
+
+######################################## all deaths up until 30th of april
+
+
+date_of_study = "04-30-2020"
+# Historical data
+covid_hist = read.csv(text=getURL("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/03-30-2020.csv"))
+covid_us_hist = subset(covid_hist, Country_Region == "US" & is.na(FIPS)==F)
+
+# Import outcome data from JHU CSSE
+covid = read.csv(text=getURL(paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/",date_of_study,".csv")))
+covid_us = subset(covid,Country_Region == "US")[,1:12]
+covid_us = rbind(covid_us,subset(covid_us_hist, (!(FIPS %in% covid_us$FIPS))  & Confirmed == 0 & Deaths == 0 & is.na(FIPS)==F))
+covid_us$FIPS = str_pad(covid_us$FIPS, 5, pad = "0")
+
+covid_us<-subset(covid_us, select=c("FIPS", "Deaths"))
+colnames(covid_us)<-c("FIPS", "NewDeaths")
+
+covid19sample<-merge(covid19sample, covid_us, by.x="fips", by.y="FIPS")
+
+
+
+##############################################################################################
+
+covid19sampleunder<-covid19sample[covid19sample$UVvitdyearmeanQ2!=5,]
+summary(covid19sampleunder$meanUVAJAN01APR30)
+
+mean(covid19sampleunder$meanUVAJAN01APR30)
+sd(covid19sampleunder$meanUVAJAN01APR30)
+
+##########################################################################################
+
+library(glmmTMB)
+library(emmeans)
+
+m <- glmmTMB(
+  NewDeaths ~  meanUVAJAN01APR30
+  # air pollution
+  + scale(mean_pm25) 
+  # other climate
+  + scale(mean_winter_temp)
+  # demographics
+  + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT)
+  # population
+  + offset(log(population)) 
+  # multilevel
+  + (1 | state), 
+  
+  ziformula = ~  
+    # demographics
+    + scale(pct_blk) + scale(older_pecent)  + scale(hispanic) + scale(popdensity)
+  # Deprivation
+  + scale(PCA1)
+  # health care factors
+  + scale(statepositivetestsperpop) 
+  # urban rural
+  + factor(RUCC_2013_CAT),
+  # family
+  family = nbinom2, 
+  data = covid19sampleunder
+)
+
+## show estimates
+m
+summary(m)
+confint(m)
+
+exp(-0.48537907)
+exp(-0.13965264)
+exp(-0.31251587)
+
+######################################################################
+
+LL<-summary(covid19sampleunder$meanUVAJAN01APR30)[2]
+M<-summary(covid19sampleunder$meanUVAJAN01APR30)[3]
+UL<-summary(covid19sampleunder$meanUVAJAN01APR30)[5]
+
+t<-emmeans(m, c("meanUVAJAN01APR30"), at = list(meanUVAJAN01APR30  = c(LL, M, UL)), type = "re", offset=c(log(1000000)))
+
+#####
+plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen")
+
+t<-emmeans(m, c("meanUVAJAN01APR30"), at = list(meanUVAJAN01APR30 = c(6, 7,8)), type = "re", offset=c(log(1000000)))
+plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen") + theme_bw(base_size = 18)
+
+library(dplyr)
+
+covid19sample %>%
+  group_by(UVvitdyearmeanQ2) %>%
+  summarise(UVvitdyearmean)
+
+covid19sample %>%
+  group_by(UVvitdyearmeanQ2) %>%
+  dplyr::summarize(Max = max(UVvitdyearmean, na.rm=TRUE))
+
+
+
+
+

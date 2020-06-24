@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1592562533651.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3528210179",
+    "id" : "1CFEF70B",
+    "lastKnownWriteTime" : 1592567161,
+    "last_content_update" : 1592567161028,
+    "path" : "~/GitHub/COVID_UV/newanalyses.R",
+    "project_path" : "newanalyses.R",
+    "properties" : {
+        "cursorPosition" : "166,71",
+        "scrollLine" : "143",
+        "tempName" : "Untitled2"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 12,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

@@ -1,0 +1,44 @@
+library(readxl)
+deaths<-read_excel("morti 2020-2015.xlsx", sheet=2, skip=1)
+deaths<-subset(deaths, select=c("COD_PROVCOM", "M+F...9", "M+F...12"))
+colnames(deaths)<-c("codcom", "marapr1519deaths", "marapr20deaths")
+deaths$codcom<-as.character(as.numeric(deaths$codcom))
+
+covars<-read_excel("Municipality Italy_with deprivation.xlsx")
+covars<-covars[3:nrow(covars),]
+covars$codcom<-as.character(as.numeric(covars$codcom))
+
+deathscovars<-merge(deaths, covars, by.x="codcom", all.x=T)
+
+UVA<-read.csv("meanuvajanmayITALY.csv")
+UVAdeathscovars <- merge(deathscovars, UVA, by.x="codcom", by.y="muni")
+
+tests<-readr::read_csv("https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/dati-province/dpc-covid19-ita-province-20200430.csv")
+tests<-tests[]
+
+
+####
+UVAdeathscovars$deathsdiffnegativetozero<-UVAdeathscovars$marapr20deaths-UVAdeathscovars$marapr1519deaths
+UVAdeathscovars$deathsdiffnegativetozero<-ifelse(UVAdeathscovars$deathsdiffnegativetozero<0, 0, UVAdeathscovars$deathsdiffnegativetozero)
+
+
+##### rplace missings
+UVAdeathscovars$z_percfore<-as.numeric(UVAdeathscovars$`Perc. Fore`)
+UVAdeathscovars$z_perc65<-as.numeric(UVAdeathscovars$`Perc. 65+`)
+UVAdeathscovars$z_perc85<-as.numeric(UVAdeathscovars$`Perc. 85+`)
+UVAdeathscovars$z_densityinhabitants<-as.numeric(UVAdeathscovars$`Density (inhabitants`)
+UVAdeathscovars$z_deprivationn<-as.numeric(UVAdeathscovars$Deprivation)
+UVAdeathscovars$z_superficietotalekm2<-as.numeric(UVAdeathscovars$`Superficie totale (Km2)`)
+
+### log pop
+UVAdeathscovars$logpop<-log(as.numeric(UVAdeathscovars$`Census population`))
+
+### only non missing for all these vars
+UVAdeathscovars<-subset(UVAdeathscovars, select=c("codcom", "marapr1519deaths", "marapr20deaths","deathsdiffnegativetozero", "Provincia", 
+                                 "meanUVAJANMAY", "z_percfore","z_perc65", "z_perc85", "z_densityinhabitants",
+                                 "z_deprivationn", "z_superficietotalekm2", "logpop"))
+UVAdeathscovars<-na.omit(UVAdeathscovars)
+
+
+write.csv(UVAdeathscovars, "UVAdeathscovars.csv", row.names=F)
+

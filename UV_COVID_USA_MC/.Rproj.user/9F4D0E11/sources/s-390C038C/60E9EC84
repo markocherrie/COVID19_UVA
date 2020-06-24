@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1592911628522.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "60E9EC84",
+    "lastKnownWriteTime" : 1592920316,
+    "last_content_update" : 1592920316308,
+    "path" : "~/GitHub/COVID_UVA/UV_COVID_USA_MC/PreprocessingLongUV.R",
+    "project_path" : "PreprocessingLongUV.R",
+    "properties" : {
+        "cursorPosition" : "44,44",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 10,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

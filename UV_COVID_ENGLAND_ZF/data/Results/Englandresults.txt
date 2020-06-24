@@ -1,0 +1,100 @@
+ Family: nbinom2  ( log )
+Formula:          covid19 ~ meanUVAJAN01APR17 + scale(pm251418) + scale(Meantempwinter) +  
+    scale(p80up) + scale(p6579) + scale(pblack) + scale(pindian) +  
+    scale(ppakbang) + scale(pchinese) + scale(incomescore19) +  
+    scale(higheredu) + scale(pcarehm) + scale(countDays) + offset(log(allpop)) +      (1 | utla)
+Zero inflation:           ~scale(p80up) + scale(p6579) + scale(p5064) + scale(pblack) + 
+    scale(pindian) + scale(ppakbang) + scale(pchinese) + scale(incomescore19) + 
+    scale(pcarehm) + scale(pbus) + scale(ptrain) + scale(ptube) +     scale(personkm2) + scale(countDays)
+Data: covid19
+
+     AIC      BIC   logLik deviance df.resid 
+ 26922.6  27134.1 -13430.3  26860.6     6759 
+
+Random effects:
+
+Conditional model:
+ Groups Name        Variance Std.Dev.
+ utla   (Intercept) 0.1498   0.387   
+Number of obs: 6790, groups:  utla, 150
+
+Overdispersion parameter for nbinom2 family (): 5.37 
+
+Conditional model:
+                       Estimate Std. Error z value Pr(>|z|)    
+(Intercept)           -5.202961   0.549305  -9.472  < 2e-16 ***
+meanUVAJAN01APR17     -0.006789   0.001337  -5.079 3.80e-07 ***
+scale(pm251418)        0.236902   0.027323   8.670  < 2e-16 ***
+scale(Meantempwinter) -0.050382   0.021037  -2.395  0.01662 *  
+scale(p80up)           0.224890   0.021147  10.635  < 2e-16 ***
+scale(p6579)           0.023186   0.025061   0.925  0.35488    
+scale(pblack)          0.043388   0.015408   2.816  0.00486 ** 
+scale(pindian)         0.051602   0.011743   4.394 1.11e-05 ***
+scale(ppakbang)        0.016965   0.012350   1.374  0.16957    
+scale(pchinese)       -0.059312   0.013754  -4.312 1.62e-05 ***
+scale(incomescore19)   0.097394   0.017059   5.709 1.13e-08 ***
+scale(higheredu)      -0.020453   0.016313  -1.254  0.20991    
+scale(pcarehm)         0.127206   0.010752  11.831  < 2e-16 ***
+scale(countDays)       0.147410   0.032817   4.492 7.06e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Zero-inflation model:
+                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)          -9.43742    2.36235  -3.995 6.47e-05 ***
+scale(p80up)         -4.55354    1.85532  -2.454   0.0141 *  
+scale(p6579)          0.12591    1.21567   0.104   0.9175    
+scale(p5064)         -0.29175    0.41221  -0.708   0.4791    
+scale(pblack)        -1.39609    0.72323  -1.930   0.0536 .  
+scale(pindian)       -0.83626    0.70407  -1.188   0.2349    
+scale(ppakbang)       0.18351    0.26337   0.697   0.4859    
+scale(pchinese)      -0.02588    0.13879  -0.186   0.8521    
+scale(incomescore19) -0.74075    0.68305  -1.084   0.2782    
+scale(pcarehm)        0.78205    0.55651   1.405   0.1599    
+scale(pbus)          -0.38397    0.51095  -0.751   0.4524    
+scale(ptrain)         0.49040    0.33140   1.480   0.1389    
+scale(ptube)         -1.11031    0.90560  -1.226   0.2202    
+scale(personkm2)     -0.02707    0.29959  -0.090   0.9280    
+scale(countDays)     -0.69088    0.48940  -1.412   0.1580    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+                                      2.5 %       97.5 %     Estimate
+cond.(Intercept)               -6.279579229 -4.126343492 -5.202961360
+cond.meanUVAJAN01APR17         -0.009408539 -0.004168829 -0.006788684
+cond.scale(pm251418)            0.183349735  0.290454820  0.236902277
+cond.scale(Meantempwinter)     -0.091613640 -0.009151086 -0.050382363
+cond.scale(p80up)               0.183442732  0.266337605  0.224890168
+cond.scale(p6579)              -0.025933601  0.072304994  0.023185697
+cond.scale(pblack)              0.013189333  0.073586332  0.043387832
+cond.scale(pindian)             0.028586665  0.074617745  0.051602205
+cond.scale(ppakbang)           -0.007241862  0.041171015  0.016964577
+cond.scale(pchinese)           -0.086270373 -0.032354626 -0.059312500
+cond.scale(incomescore19)       0.063958896  0.130829368  0.097394132
+cond.scale(higheredu)          -0.052425563  0.011519146 -0.020453209
+cond.scale(pcarehm)             0.106131500  0.148279649  0.127205575
+cond.scale(countDays)           0.083089769  0.211730551  0.147410160
+utla.cond.Std.Dev.(Intercept)   0.336419858  0.445142641  0.386981684
+zi.(Intercept)                -14.067532883 -4.807307564 -9.437420224
+zi.scale(p80up)                -8.189888828 -0.917186751 -4.553537790
+zi.scale(p6579)                -2.256770578  2.508583884  0.125906653
+zi.scale(p5064)                -1.099662439  0.516162858 -0.291749790
+zi.scale(pblack)               -2.813582654  0.021407259 -1.396087698
+zi.scale(pindian)              -2.216210210  0.543688689 -0.836260760
+zi.scale(ppakbang)             -0.332684111  0.699697228  0.183506559
+zi.scale(pchinese)             -0.297896345  0.246141587 -0.025877379
+zi.scale(incomescore19)        -2.079506768  0.598003530 -0.740751619
+zi.scale(pcarehm)              -0.308696472  1.872792745  0.782048137
+zi.scale(pbus)                 -1.385419635  0.617484188 -0.383967724
+zi.scale(ptrain)               -0.159119864  1.139928302  0.490404219
+zi.scale(ptube)                -2.885253467  0.664637185 -1.110308141
+zi.scale(personkm2)            -0.614253980  0.560106186 -0.027073897
+zi.scale(countDays)            -1.650087165  0.268334807 -0.690876179
+[1] 0.3902944
+[1] 0.6590981
+[1] 0.5071906
+[1] NaN
+[1] NA
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+  342.2   399.3   413.9   411.8   425.3   468.4       1 
+null device 
+          1 

@@ -1,0 +1,26 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1592931353034.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3985723227",
+    "id" : "F661D550",
+    "lastKnownWriteTime" : 1592934248,
+    "last_content_update" : 1592934248850,
+    "path" : "C:/Users/mcherrie/Desktop/meta/analyses.R",
+    "project_path" : "analyses.R",
+    "properties" : {
+        "cursorPosition" : "5,0",
+        "scrollLine" : "1",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

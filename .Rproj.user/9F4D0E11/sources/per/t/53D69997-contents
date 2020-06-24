@@ -1,0 +1,105 @@
+# load packages
+
+################################################################################
+
+library("dplyr")
+library("pscl")
+library("MASS")
+library(NBZIMM)
+library("lme4")
+library(sf)
+
+###############################################################################
+
+# RUN ALL THE PRE-PROCESSING SCRIPTS
+#source("PreprocessingHealth.R")
+#source("PreprocessingLongUV.R")
+#source("PreprocessingShortUV.R")
+
+###############################################################################
+
+#### Merge short term UVA with health data
+
+UV<-read.csv("Data/UVoutput/UVAsumm.csv")
+UV$fips<-as.numeric(as.character(UV$FIPS))
+UV$fips<-ifelse(nchar(UV$fips)==4, paste0("0",UV$fips), UV$fips)
+aggregate_pm_census_cdc_test$fips<-ifelse(nchar(aggregate_pm_census_cdc_test$fips)==4, paste0("0",aggregate_pm_census_cdc_test$fips), aggregate_pm_census_cdc_test$fips)
+aggregate_pm_census_cdc_test2<-merge(aggregate_pm_census_cdc_test, UV, by="fips", all=T)
+
+# read the data in and create the summary stats
+UVdata<-read.csv(paste0("Data/UVoutput/clim_79-00.UVA.csv"))
+
+counties<-sf::read_sf("Data/UScounties/UScounties.shp")
+UVdata$FIPS<-counties$FIPS
+
+UVdata <- UVdata %>% mutate(
+  yearmean = rowMeans(dplyr::select(., Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec)),
+  wintermean = rowMeans(dplyr::select(., Jan, Feb, Dec)),
+  summermean = rowMeans(dplyr::select(., Jun, Jul, Aug)),
+  outcomemean = rowMeans(dplyr::select(., Jan, Feb, Mar, Apr))) %>%
+  dplyr::select(FIPS, yearmean, wintermean, summermean) %>%
+  dplyr::mutate_at(vars(yearmean: summermean), funs(./10000))
+
+UVdata <- UVdata %>%
+  dplyr::select(FIPS, yearmean) %>%
+  dplyr::rename(UVAyearmean=yearmean)
+
+##########################################################
+
+UVdata2<-read.csv(paste0("Data/UVoutput/clim_79-00.VtD.csv"))
+UVdata2$FIPS<-counties$FIPS
+
+UVdata2 <- UVdata2 %>% mutate(
+  yearmean = rowMeans(dplyr::select(., Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec)),
+  wintermean = rowMeans(dplyr::select(., Jan, Feb, Dec)),
+  summermean = rowMeans(dplyr::select(., Jun, Jul, Aug)),
+  outcomemean = rowMeans(dplyr::select(., Jan, Feb, Mar, Apr))) %>%
+  dplyr::select(FIPS, yearmean, wintermean, summermean) %>%
+  dplyr::mutate_at(vars(yearmean: summermean), funs(./10))
+
+UVdata2 <- UVdata2 %>%
+  dplyr::select(FIPS, yearmean) %>%
+  dplyr::rename(UVvitdyearmean=yearmean)
+
+
+#### Merge Long term UVA with health data
+
+UVdata$fips<-as.character(as.numeric(UVdata$FIPS))
+UVdata2$fips<-as.character(as.numeric(UVdata2$FIPS))
+UVdata$fips<-ifelse(nchar(UVdata$fips)==4, paste0("0", UVdata$fips), UVdata$fips)
+UVdata2$fips<-ifelse(nchar(UVdata2$fips)==4, paste0("0", UVdata2$fips), UVdata2$fips)
+
+aggregate_pm_census_cdc_test2<-merge(aggregate_pm_census_cdc_test2, UVdata, by="fips")
+aggregate_pm_census_cdc_test2<-merge(aggregate_pm_census_cdc_test2, UVdata2, by="fips")
+aggregate_pm_census_cdc_test2$meanUVAKJ<-(aggregate_pm_census_cdc_test2$meanUVA*86400)/1000
+aggregate_pm_census_cdc_test2$meanUVAKJ100<-aggregate_pm_census_cdc_test2$meanUVAKJ/100
+
+
+#### Constructing deprivation principal component scores
+agg<-aggregate_pm_census_cdc_test2[,c("poverty", "medianhousevalue", "medhouseholdincome", "pct_owner_occ", "education")]
+agg$poverty=1-agg$poverty
+agg$education=1-agg$education
+agg<-agg[complete.cases(agg),]
+agg.pca <- prcomp(agg, center = TRUE, scale. = TRUE)
+PCA1<-as.data.frame(agg.pca$x[,1])
+aggregate_pm_census_cdc_test2 <- aggregate_pm_census_cdc_test2[complete.cases(aggregate_pm_census_cdc_test2[,c("poverty", "medianhousevalue", "medhouseholdincome", "pct_owner_occ", "education")]),]
+aggregate_pm_census_cdc_test2<-cbind(aggregate_pm_census_cdc_test2, PCA1)
+names(aggregate_pm_census_cdc_test2)[75]<-"PCA1"
+
+#### State tests code
+aggregate_pm_census_cdc_test2<-aggregate_pm_census_cdc_test2 %>%
+  group_by(Province_State) %>%
+  mutate(statepop=sum(population))
+aggregate_pm_census_cdc_test2<-aggregate_pm_census_cdc_test2<-aggregate_pm_census_cdc_test2 %>%
+  mutate(statetestsperpop=(totalTestResults/statepop)*100)
+aggregate_pm_census_cdc_test2<-aggregate_pm_census_cdc_test2 %>%
+  mutate(statepositivetestsperpop=(positive/statepop)*100)
+
+#### Urban Rural indicator
+URRU<-read.csv("Data/HealthPop/ruralurbancodes2013.csv")
+URRU$fips<-as.numeric(as.character(URRU$FIPS))
+URRU$fips<-ifelse(nchar(URRU$fips)==4, paste0("0",URRU$fips), URRU$fips)
+aggregate_pm_census_cdc_test2<-merge(aggregate_pm_census_cdc_test2,URRU, by="fips")
+# Urban and close to metro as 1
+aggregate_pm_census_cdc_test2$RUCC_2013_CAT[aggregate_pm_census_cdc_test2$RUCC_2013%in%c(5,7,9)]<-0
+aggregate_pm_census_cdc_test2$RUCC_2013_CAT[aggregate_pm_census_cdc_test2$RUCC_2013%in%c(1,2,3,4,6,8)]<-1

@@ -1,0 +1,132 @@
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  5.376   6.293   6.897   6.963   7.479  10.468 
+# A tibble: 5 x 2
+  UVvitdyearmeanQ2   Min
+             <int> <dbl>
+1                1  7.34
+2                2 10.8 
+3                3 12.5 
+4                4 14.3 
+5                5 16.5 
+[1] 6.962619
+[1] 0.8301945
+Formula:          NewDeaths ~ meanUVAJAN01APR30_100 + scale(mean_pm25) + scale(mean_winter_temp) +  
+    scale(pct_blk) + scale(older_pecent) + scale(popdensity) +  
+    scale(hispanic) + scale(PCA1) + scale(statepositivetestsperpop) +  
+    factor(RUCC_2013_CAT) + offset(log(population)) + (1 | state)
+Zero inflation:             ~+scale(pct_blk) + scale(older_pecent) + scale(hispanic) + scale(popdensity) + 
+    scale(PCA1) + scale(statepositivetestsperpop) + factor(RUCC_2013_CAT)
+Data: covid19sampleunder
+      AIC       BIC    logLik  df.resid 
+ 8537.394  8659.479 -4247.697      2453 
+Random-effects (co)variances:
+
+Conditional model:
+ Groups Name        Std.Dev.
+ state  (Intercept) 0.6096  
+
+Number of obs: 2474 / Conditional model: state, 46
+
+Overdispersion parameter for nbinom2 family (): 0.957 
+
+Fixed Effects:
+
+Conditional model:
+                    (Intercept)            meanUVAJAN01APR30_100                 scale(mean_pm25)  
+                       -7.71579                         -0.30954                          0.37011  
+        scale(mean_winter_temp)                   scale(pct_blk)              scale(older_pecent)  
+                        0.07575                          0.31979                          0.19187  
+              scale(popdensity)                  scale(hispanic)                      scale(PCA1)  
+                        0.07129                          0.21549                         -0.22198  
+scale(statepositivetestsperpop)           factor(RUCC_2013_CAT)1  
+                        0.30346                         -0.19203  
+
+Zero-inflation model:
+                    (Intercept)                   scale(pct_blk)              scale(older_pecent)  
+                      -1.270729                        -0.968371                         0.906434  
+                scale(hispanic)                scale(popdensity)                      scale(PCA1)  
+                       0.111164                         0.218058                         0.600064  
+scale(statepositivetestsperpop)           factor(RUCC_2013_CAT)1  
+                      -0.002871                        -1.200411  
+ Family: nbinom2  ( log )
+Formula:          NewDeaths ~ meanUVAJAN01APR30_100 + scale(mean_pm25) + scale(mean_winter_temp) +  
+    scale(pct_blk) + scale(older_pecent) + scale(popdensity) +  
+    scale(hispanic) + scale(PCA1) + scale(statepositivetestsperpop) +  
+    factor(RUCC_2013_CAT) + offset(log(population)) + (1 | state)
+Zero inflation:             ~+scale(pct_blk) + scale(older_pecent) + scale(hispanic) + scale(popdensity) + 
+    scale(PCA1) + scale(statepositivetestsperpop) + factor(RUCC_2013_CAT)
+Data: covid19sampleunder
+
+     AIC      BIC   logLik deviance df.resid 
+  8537.4   8659.5  -4247.7   8495.4     2453 
+
+Random effects:
+
+Conditional model:
+ Groups Name        Variance Std.Dev.
+ state  (Intercept) 0.3716   0.6096  
+Number of obs: 2474, groups:  state, 46
+
+Overdispersion parameter for nbinom2 family (): 0.957 
+
+Conditional model:
+                                Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                     -7.71579    0.64307 -11.998  < 2e-16 ***
+meanUVAJAN01APR30_100           -0.30954    0.08829  -3.506 0.000455 ***
+scale(mean_pm25)                 0.37011    0.08020   4.615 3.93e-06 ***
+scale(mean_winter_temp)          0.07575    0.09351   0.810 0.417892    
+scale(pct_blk)                   0.31979    0.04604   6.947 3.74e-12 ***
+scale(older_pecent)              0.19187    0.05557   3.453 0.000555 ***
+scale(popdensity)                0.07129    0.02822   2.527 0.011518 *  
+scale(hispanic)                  0.21549    0.03898   5.529 3.23e-08 ***
+scale(PCA1)                     -0.22198    0.04527  -4.903 9.43e-07 ***
+scale(statepositivetestsperpop)  0.30346    0.09115   3.329 0.000871 ***
+factor(RUCC_2013_CAT)1          -0.19203    0.12893  -1.489 0.136376    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Zero-inflation model:
+                                 Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                     -1.270729   0.335003  -3.793 0.000149 ***
+scale(pct_blk)                  -0.968371   0.363156  -2.667 0.007664 ** 
+scale(older_pecent)              0.906434   0.195892   4.627 3.71e-06 ***
+scale(hispanic)                  0.111164   0.142102   0.782 0.434050    
+scale(popdensity)                0.218058   0.082338   2.648 0.008089 ** 
+scale(PCA1)                      0.600064   0.216459   2.772 0.005568 ** 
+scale(statepositivetestsperpop) -0.002871   0.174766  -0.016 0.986893    
+factor(RUCC_2013_CAT)1          -1.200411   0.430402  -2.789 0.005286 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+                                           2.5 %      97.5 %     Estimate
+cond.(Intercept)                     -8.97618283 -6.45539769 -7.715790258
+cond.meanUVAJAN01APR30_100           -0.48257799 -0.13649502 -0.309536504
+cond.scale(mean_pm25)                 0.21292185  0.52729790  0.370109877
+cond.scale(mean_winter_temp)         -0.10751972  0.25901386  0.075747074
+cond.scale(pct_blk)                   0.22956164  0.41001684  0.319789241
+cond.scale(older_pecent)              0.08295811  0.30078239  0.191870251
+cond.scale(popdensity)                0.01598711  0.12658813  0.071287621
+cond.scale(hispanic)                  0.13909816  0.29188965  0.215493908
+cond.scale(PCA1)                     -0.31070912 -0.13324671 -0.221977914
+cond.scale(statepositivetestsperpop)  0.12480404  0.48211952  0.303461783
+cond.factor(RUCC_2013_CAT)1          -0.44473218  0.06066728 -0.192032446
+state.cond.Std.Dev.(Intercept)        0.45274108  0.82077472  0.609588739
+zi.(Intercept)                       -1.92732402 -0.61413482 -1.270729419
+zi.scale(pct_blk)                    -1.68014485 -0.25659811 -0.968371483
+zi.scale(older_pecent)                0.52249351  1.29037422  0.906433866
+zi.scale(hispanic)                   -0.16735133  0.38967838  0.111163525
+zi.scale(popdensity)                  0.05667743  0.37943808  0.218057754
+zi.scale(PCA1)                        0.17581188  1.02431583  0.600063852
+zi.scale(statepositivetestsperpop)   -0.34540636  0.33966441 -0.002870974
+zi.factor(RUCC_2013_CAT)1            -2.04398383 -0.35683772 -1.200410777
+[1] 0.6171902
+[1] 0.8724107
+[1] 0.733787
+function (which = dev.cur()) 
+{
+    if (which == 1) 
+        stop("cannot shut down device 1 (the null device)")
+    .External(C_devoff, as.integer(which))
+    dev.cur()
+}
+<bytecode: 0x0000024298766f68>
+<environment: namespace:grDevices>
