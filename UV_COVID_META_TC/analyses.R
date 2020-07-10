@@ -4,8 +4,8 @@ library(bitops)
 library(metafor)
 library(Formula)
 
-EffectSize=c(-0.30954,-0.20536, -0.6789)
-se=c(0.0882,0.06959, 0.1337)
+EffectSize=c(-0.34028,-0.20536, -0.6789)
+se=c(0.08822,0.06959, 0.1337)
 slab=c("USA", "Italy", "England")
 
 #Run ramdom effects model

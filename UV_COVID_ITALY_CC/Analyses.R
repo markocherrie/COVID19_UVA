@@ -1,7 +1,8 @@
 UVAdeathscovars<-read.csv("data/FinalSample/covid19withUVItaly.csv")
 
 ############################################
-
+#UVAdeathscovars$deathsdiffnegativetozero<-round(UVAdeathscovars$deathsdiffnegativetozero, 0)
+# similar results with rounded deaths - 0.84 (0.74-0.96); continue with non-integar
 
 library(glmmTMB)
 library(emmeans)
@@ -50,6 +51,8 @@ exp(confint(m)[2,3]*100)
 mean(UVAdeathscovars$meanUVAJAN01APR30)
 sd(UVAdeathscovars$meanUVAJAN01APR30)
 
+# ICC
+performance::icc(m)
 
 library(ggplot2)
 t<-emmeans(m, c("meanUVAJAN01APR30"), at = list(meanUVAJAN01APR30 = c(600, 700,800)), type = "re", offset=c(log(1000000)))

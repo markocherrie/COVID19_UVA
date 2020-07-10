@@ -1,6 +1,6 @@
 #####################################################
 ### zinb covid 19 model 
-### zf May 2020 ###
+### zf May 2020 ### 
 
 library("dplyr")
 library("MASS")
@@ -72,6 +72,9 @@ exp(confint(m)[2,3]*100)
 mean(covid19$meanUVAJAN01APR17)
 sd(covid19$meanUVAJAN01APR17)
 summary(covid19$meanUVAJAN01APR17)
+
+# ICC
+performance::icc(m)
 
 t<-emmeans(m, c("meanUVAJAN01APR17"),at = list(meanUVAJAN01APR17 = c(350, 400, 450)), type = "re", offset=c(log(1000000)))
 
