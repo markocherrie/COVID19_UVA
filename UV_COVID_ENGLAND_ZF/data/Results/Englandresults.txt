@@ -1,7 +1,6 @@
  Family: nbinom2  ( log )
 Formula:          covid19 ~ meanUVAJAN01APR17 + scale(pm251418) + scale(Meantempwinter) +  
-    scale(p80up) + scale(p6579) + scale(pblack) + scale(pindian) +  
-    scale(ppakbang) + scale(pchinese) + scale(incomescore19) +  
+    scale(p80up) + scale(p6579) + scale(pblack) + scale(pindian) +      scale(ppakbang) + scale(pchinese) + scale(incomescore19) +  
     scale(higheredu) + scale(pcarehm) + scale(countDays) + offset(log(allpop)) +      (1 | utla)
 Zero inflation:           ~scale(p80up) + scale(p6579) + scale(p5064) + scale(pblack) + 
     scale(pindian) + scale(ppakbang) + scale(pchinese) + scale(incomescore19) + 
@@ -96,5 +95,3 @@ zi.scale(countDays)            -1.650087165  0.268334807 -0.690876179
 [1] NA
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
   342.2   399.3   413.9   411.8   425.3   468.4       1 
-null device 
-          1 

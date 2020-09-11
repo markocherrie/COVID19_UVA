@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
+    "path" : "~/GitHub/COVID_UVA/UV_COVID_ITALY_CC",
+=======
     "path" : "~/GitHub/COVID19_UVA/UV_COVID_ITALY_CC",
+>>>>>>> 6a6cbfe533cb948ac90b05f5d2a539413a57e7ba
     "sortOrder" : [
         {
             "ascending" : true,

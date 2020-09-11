@@ -5,6 +5,7 @@
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
+<<<<<<< HEAD
     "hash" : "1152868866",
     "id" : "F661D550",
     "lastKnownWriteTime" : 1599813847,
@@ -13,6 +14,16 @@
     "project_path" : "analyses.R",
     "properties" : {
         "cursorPosition" : "1,3",
+=======
+    "hash" : "1270071591",
+    "id" : "F661D550",
+    "lastKnownWriteTime" : 1594378041,
+    "last_content_update" : 1594378041640,
+    "path" : "~/GitHub/COVID_UVA/UV_COVID_META_TC/analyses.R",
+    "project_path" : "analyses.R",
+    "properties" : {
+        "cursorPosition" : "0,0",
+>>>>>>> e3d6202abbb40416408e4be59d02e8216095b7bc
         "scrollLine" : "0",
         "tempName" : "Untitled1"
     },

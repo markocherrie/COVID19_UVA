@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
     "path" : "~/GitHub/COVID19_UVA/UV_COVID_USA_MC/Data/boundaries/counties",
+=======
+    "path" : "~/GitHub/COVID_UVA/UV_COVID_USA_MC/Data/FinalSample",
+>>>>>>> e3d6202abbb40416408e4be59d02e8216095b7bc
     "sortOrder" : [
         {
             "ascending" : false,

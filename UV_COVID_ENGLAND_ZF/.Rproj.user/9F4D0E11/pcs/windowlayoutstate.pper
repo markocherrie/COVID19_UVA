@@ -1,7 +1,11 @@
 {
     "left" : {
         "panelheight" : 598,
+<<<<<<< HEAD
+        "splitterpos" : 207,
+=======
         "splitterpos" : 136,
+>>>>>>> 6a6cbfe533cb948ac90b05f5d2a539413a57e7ba
         "topwindowstate" : "NORMAL",
         "windowheight" : 636
     },
