@@ -2,7 +2,7 @@
 
 covid19sample<-read.csv("Data/FinalSample/UV_COVID_USA_sample.csv")
 
-counties<-read_sf("Data/UScounties/UScounties.shp")
+counties<-read_sf("Data/boundaries/counties/UScounties.shp")
 
 covid19sample$fips<-ifelse(nchar(covid19sample$fips)==4, paste0("0", covid19sample$fips), covid19sample$fips)
 covid19sample$FIPS<-as.character(covid19sample$fips)
