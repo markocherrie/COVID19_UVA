@@ -1,7 +1,11 @@
 # If you've run the preprocessing code then 
 #covid19sample<-aggregate_pm_census_cdc_test2
 # otherwise:
-covid19sample<-read.csv("Data/FinalSample/UV_COVID_USA_sample.csv")
+covid19sample<-read.csv("Data/FinalSample/UV_COVID_sample.csv")
+
+#add in humidity
+humidity<-read.csv("Data/HealthPop/humidity_county.csv")
+covid19sample<-merge(covid19sample, humidity, by.x="fips", by.y="FIPS")
 
 sink("Data/Results/USAresults.txt") 
 
@@ -33,6 +37,7 @@ m <- glmmTMB(
   + scale(mean_pm25) 
   # other climate
   + scale(mean_winter_temp)
+  + scale(mean_winter_rm)
   # demographics
   + scale(pct_blk) + scale(older_pecent) + scale(popdensity) + scale(hispanic)
   # Deprivation
@@ -72,14 +77,17 @@ exp(confint(m)[2,1])
 exp(confint(m)[2,2])
 exp(confint(m)[2,3])
 
+#### intraclass correlation coefficient
+performance::icc(m)
+
 ####### Get the predictions and plots
 
 library(ggplot2)
-t<-emmeans(m, c("meanUVAJAN01APR30"), at = list(meanUVAJAN01APR30 = c(6, 7,8)), type = "re", offset=c(log(1000000)))
+t<-emmeans(m, c("meanUVAJAN01APR30_100"), at = list(meanUVAJAN01APR30_100 = c(6, 7, 8)), type = "re", offset=c(log(1000000)))
 
 pdf("Data/Figures/Figure2a.pdf", width=8, height=5)
 plot(t, by = NULL, horizontal = FALSE, colors = "darkgreen") + theme_bw(base_size = 18) +labs(y= "COVID-19 deaths per million", x = "Mean Daily UVA Jan-Apr 2020 (KJ/m2)")
-dev.off
+dev.off()
 
 
 sink()
